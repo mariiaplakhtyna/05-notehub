@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import SearchBox from './components/SearchBox/SearchBox';
-import NoteForm from './components/NoteForm/NoteForm';
-import NoteList from './components/NoteList/NoteList';
-import Modal from './components/Modal/Modal';
-import Pagination from './components/Pagination/Pagination';
+import SearchBox from '../SearchBox/SearchBox';
+import NoteForm from '../NoteForm/NoteForm';
+import NoteList from '../NoteList/NoteList';
+import Modal from '../Modal/Modal';
+import Pagination from '../Pagination/Pagination';
 
-import { fetchNotes, createNote, deleteNote } from './services/noteService';
-import type { NoteTag } from './types/note';
+import { fetchNotes, createNote, deleteNote } from '../../services/noteService';
+import type { NoteTag } from '../../types/note';
 
 import css from './App.module.css';
 
