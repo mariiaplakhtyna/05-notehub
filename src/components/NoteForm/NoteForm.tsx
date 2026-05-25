@@ -1,16 +1,13 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Yup from 'yup';
 
+import { createNote } from '../../services/noteService';
 import type { NoteTag } from '../../types/note';
 
 import css from './NoteForm.module.css';
 
 interface NoteFormProps {
-  onSubmit: (values: {
-    title: string;
-    content: string;
-    tag: NoteTag;
-  }) => void;
   onCancel: () => void;
 }
 
@@ -21,22 +18,29 @@ const initialValues = {
 };
 
 const validationSchema = Yup.object({
-  title: Yup.string()
-    .min(3, 'Title must be at least 3 characters')
-    .max(50, 'Title must be at most 50 characters')
-    .required('Title is required'),
-  content: Yup.string().max(500, 'Content must be at most 500 characters'),
+  title: Yup.string().min(3).max(50).required(),
+  content: Yup.string().max(500),
   tag: Yup.mixed<NoteTag>()
     .oneOf(['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'])
-    .required('Tag is required'),
+    .required(),
 });
 
-export default function NoteForm({ onSubmit, onCancel }: NoteFormProps) {
+export default function NoteForm({ onCancel }: NoteFormProps) {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      onCancel();
+    },
+  });
+
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={values => onSubmit(values)}
+      onSubmit={values => mutation.mutate(values)}
     >
       <Form className={css.form}>
         <div className={css.formGroup}>
@@ -47,13 +51,7 @@ export default function NoteForm({ onSubmit, onCancel }: NoteFormProps) {
 
         <div className={css.formGroup}>
           <label htmlFor="content">Content</label>
-          <Field
-            as="textarea"
-            id="content"
-            name="content"
-            rows={8}
-            className={css.textarea}
-          />
+          <Field as="textarea" id="content" name="content" rows={8} className={css.textarea} />
           <ErrorMessage name="content" component="span" className={css.error} />
         </div>
 
@@ -74,7 +72,7 @@ export default function NoteForm({ onSubmit, onCancel }: NoteFormProps) {
             Cancel
           </button>
 
-          <button type="submit" className={css.submitButton}>
+          <button type="submit" className={css.submitButton} disabled={mutation.isPending}>
             Create note
           </button>
         </div>
